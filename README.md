@@ -18,6 +18,8 @@ https://github.com/LyuLumos/VJudge-Spider-on-TravisCI/blob/main/out.csv
 
 - **目前尚未在某个学期内实际测试过，可能有bug。**
 - 单学期内首末两次计分如遇到爬虫代码问题请手动调整 `run.py`。
+- 首次运行请保留 `out.csv` 中的标题行。
+
 
 
 ## Meet Error?
@@ -26,11 +28,17 @@ https://github.com/LyuLumos/VJudge-Spider-on-TravisCI/blob/main/out.csv
 
 ### Linux
 
-`.travis.yml` 中包含了需要的全部操作，不需要更改爬虫代码
+
+`.travis.yml` 中包含了需要的全部操作，不需要更改爬虫代码。
 
 ### Windows
 
 请自行下载 Chrome浏览器 和 Chromedriver，注释 `run.py` 74-79行，取消注释第80行，之后再运行。
+
+# 本地运行（建议提前做好备份）
+python run.py
+```
+
 
 ## Acknowledgement
 

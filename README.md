@@ -1,9 +1,10 @@
 # VJudge-Spider-on-TravisCI
 
 [![Build Status](https://app.travis-ci.com/CUCCS/VJudge-Spider-on-TravisCI.svg?branch=main)](https://app.travis-ci.com/CUCCS/VJudge-Spider-on-TravisCI)
+
 谁知道它能不能跑起来...
 
-## Ranking File Link
+## Rank 
 
 https://github.com/CUCCS/VJudge-Spider-on-TravisCI/blob/main/out.csv
 
@@ -46,7 +47,7 @@ git pull
 
 * 创建比赛时不要设置密码。
 
-* 注意每手动push一次到main分支，都会构建一次，并且启动爬虫程序,更新上面链接中的数据。
+* 注意每手动push一次到main分支，都会构建一次，并且启动爬虫程序,更新上面链接中的积分。
 
 * main分支的pull requets 也能够触发构建
 
@@ -57,7 +58,11 @@ Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Ra
 
 ## Meet Error?
 
-如果爬虫代码遇到问题，建议在本地运行,调试代码。需要的包在 `requirement.txt` 中。
+* 如果爬虫代码遇到问题，建议在本地运行,调试代码。需要的包在 `requirement.txt` 中。
+
+* 如果状态显示了红色,Fail了,点开[查看构建日志](https://app.travis-ci.com/CUCCS/VJudge-Spider-on-TravisCI)看错误。
+
+
 ### 本地运行：
 ### Linux
 
@@ -65,7 +70,7 @@ Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Ra
 
 ### Windows
 
-#### Prerequest
+#### Prerequisite
 请自行下载 Chrome浏览器 和 [Chromedriver](https://chromedriver.chromium.org/downloads),注意看网页上的版本选择说明。
 
 #### 本地运行（建议提前做好备份）

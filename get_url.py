@@ -57,8 +57,13 @@ def get_crt_time() -> str:
 
 def select_elements():
     '''选出后续需要使用的元素'''
+    from selenium.common.exceptions import NoSuchElementException
 
-    search_box = driver.find_element("xpath",r'/html/body/div[1]/div/div[2]/div/table/thead/tr/th[3]/input')
+    try:
+        search_box = driver.find_element("xpath",r'/html/body/div[1]/div/div[2]/div/table/thead/tr/th[3]/input')
+    except NoSuchElementException:
+        # 打印窗口 html
+        print(driver.page_source)
     
     search_box.send_keys('CUC\n')
 

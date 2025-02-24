@@ -1,17 +1,26 @@
 # Most of this code is based on Kate123Wong-2873311074@qq.com
 from selenium import webdriver
-import requests
 import time
 from lxml import etree
-import sys
 from selenium.common.exceptions import InvalidArgumentException
-import pdb
+
+from enum import Enum
 
 this_url = ""
 pre_url = ""
 REPO = "VJudge-Spider-on-TravisCI"
 out = "out.csv"
 
+class score(Enum):
+    solved = 1
+    only_ac = 1
+    fb = 0.5
+    up = 0.5
+
+    rank_1 = 4 # 10%
+    rank_2 = 3 # 30%
+    rank_3 = 2 # 60%
+    rank_4 = 1 # else
 
 def readin():
     global this_url
@@ -63,9 +72,20 @@ class contestant:
     # only AC
     # FB
     # 排名奖励
+#反复尝试，直到成功
+def get_with_retries(browser, url, retries=10, delay=5):
+    for i in range(retries):
+        try:
+            browser.get(url)
+            return True
+        except Exception as e:
+            print(f"Attempt {i+1} failed")
+            time.sleep(delay)
+    return False
 
-
-def getResultOfUrl(url, ifShowUpsloved):
+#将browser作为内容直接传入，减少了每次申请browser的时间
+#修改之后直接可以爬去本次的补题成绩，但是不加入排名计算
+def getResultOfUrl(url, ifShowUpsloved,browser:webdriver.Chrome):
 
     # options = webdriver.ChromeOptions()
     # options.binary_location = '/usr/bin/chromium-browser'
@@ -75,16 +95,9 @@ def getResultOfUrl(url, ifShowUpsloved):
     # options.add_argument("--no-first-run")
     # options.add_argument("--disable-default-apps")
     # browser = webdriver.Chrome('/home/travis/virtualenv/python3.7.1/chromedriver',options=options)
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument("window-size=1024,768")
-    chrome_options.add_experimental_option(
-        "excludeSwitches", ['enable-automation', 'enable-logging'])
-    chrome_options.add_argument("--no-sandbox")
-    browser = webdriver.Chrome(options=chrome_options)
+    # browser.set_page_load_timeout(30)  # 设置页面加载超时时间为60秒
     try:
+        print(f"Requesting {url}")
         browser.get(url)
     except InvalidArgumentException:
         print("No input or Error While Requesting")
@@ -93,7 +106,7 @@ def getResultOfUrl(url, ifShowUpsloved):
     from selenium.webdriver.common.by import By
     browser.find_element(By.XPATH, '//*[@id="btn-setting"]').click()
     if ifShowUpsloved:
-        time.sleep(2) # 增加加载时间
+        time.sleep(5) # 增加加载时间
         browser.find_element(  # Vjudge 前端改版，现在改用 XPATH 定位元素
             By.XPATH, '//*[@id="setting-show-practice"]/label[1]').click()
     selector = etree.HTML(browser.page_source)
@@ -108,6 +121,8 @@ def getResultOfUrl(url, ifShowUpsloved):
         column = row[i].getchildren()
 
         for j in range(len(column)):
+            if(column[j].xpath("./@class") == []):
+                continue
             classes = (column[j].xpath("./@class")[0])
 
             classes = str(classes).split(" ")
@@ -147,26 +162,29 @@ def getResultOfUrl(url, ifShowUpsloved):
 
     # 计算一些score，rank涉及到上次的补题分，故暂时不算
     for stu in student:
-        stu.score_ac = stu.accepted
-        stu.score_up = stu.upsolved * 0.5
-        stu.score_extra = (stu.accepted_fb - stu.only_ac) * \
-            0.5 + stu.only_ac * 1
+        stu.score_ac = stu.accepted * score.solved.value
+        stu.score_extra = (stu.accepted_fb - stu.only_ac) * score.fb.value + stu.only_ac * score.only_ac.value
         stu.score_sum = stu.score_ac + stu.score_extra
         stu.score_this = stu.score_sum
 
     # 计算本场来了的比赛排名奖励分：
     students = sorted(student)
-    if not ifShowUpsloved:
-        for stu in students:
-            rate = (students.index(stu) + 1) / students.__len__()
-            if rate < 0.1:
-                stu.score_rank = 4
-            elif rate < 0.3:
-                stu.score_rank = 3
-            elif rate < 0.6:
-                stu.score_rank = 2
-            else:
-                stu.score_rank = 1
+    for stu in students:
+        rate = (students.index(stu) + 1) / students.__len__()
+        if rate < 0.1:
+            stu.score_rank = score.rank_1.value
+        elif rate < 0.3:
+            stu.score_rank = score.rank_2.value
+        elif rate < 0.6:
+            stu.score_rank = score.rank_3.value
+        else:
+            stu.score_rank = score.rank_4.value
+    
+    # 再加上补提分数
+    for stu in students:
+        stu.score_up = stu.upsolved * score.up.value
+        stu.score_sum += stu.score_up
+    
     return students
 
 
@@ -198,12 +216,22 @@ def getResultHaveUPsolved(students_this, students_pre):
 
 
 def getResult(students):
+    #如果没有历史输出，则创建文件
+    try:
+        f = open(out, "r", encoding="utf-8")
+        f.close()
+    except Exception as e:
+        f = open(out, "w", encoding="utf-8")
+        print('Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Rank', file=f)
+        f.close()
     # 加上之前的sum值,排序，得到排名奖励分和rank
     with open(out, "r", encoding="utf-8") as f:
         f.readline()  # 吞掉标题行
         for line in f:
             studentFromScv = str(line).replace('\n', '').split(',')
-
+            #发现师哥代码如果有空行会报错，所以加了这个判断
+            if(not bool(line.strip())):
+                continue
             findit = False
             for stu in students:
                 if stu.name == studentFromScv[0]:
@@ -225,33 +253,39 @@ def getResult(students):
         stu.score_sum = float(stu.score_sum) + stu.score_rank
         stu.score_this = float(stu.score_this) + float(stu.score_rank)
 
+    return students
+
+#将内容保存到csv
+
+def save_to_csv(path : str, students : list):
+    # 排序，只要打印到文件就排序
     students = sorted(students)
 
     for stu in students:
         stu.rank = students.index(stu) + 1
-    return students
-
-
-def Crawl_and_save():
-    readin()
-    students_this = getResultOfUrl(this_url, False)  # 本次页面统计，不统计upsloved的成绩
-    print("this_url success")
-    students_pre = getResultOfUrl(pre_url, True)  # 对上次比赛页面进行统计，主要得到upsloved成绩
-    print("pre_url success")
-    # 整合本次AC，only AC， fb成绩和上次比赛的补题成绩
-    students = getResultHaveUPsolved(students_this, students_pre)
-    students = getResult(students)
-
-    f = open(out, 'w', encoding="utf8")
+    
+    f = open(path, 'w', encoding="utf8")
     print('Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Rank', file=f)
-
     for stu in students:
         if stu.name != '':
             print('{0},{1},{2},{3},{4},{5},{6:.1f},{7:.1f},{8}'.format(stu.name, stu.accepted, stu.only_ac,
                                                                        stu.accepted_fb, stu.score_rank, stu.upsolved,
-                                                                       stu.score_this, stu.score_sum, stu.rank),
+                                                                       stu.score_this, stu.score_sum + stu.score_rank, stu.rank),
                   file=f)
     f.close()
+#修改了师哥的代码，直接计算本次比赛的补题。
+def Crawl_and_save(browser:webdriver.Chrome):
+    readin()
+    students = getResultOfUrl(this_url, True, browser)
+    print("this_url success")
+    name = str(this_url).strip().split('/')[-1]
+
+    #打印本次结果，加入了历史记录，可以翻阅一起的内容
+    save_to_csv(f"./history/{name}.csv", students)
+
+    #叠加到上次比赛
+    students = getResult(students)
+    save_to_csv(out,students)
     print("Finished")
 
 
@@ -265,14 +299,6 @@ if __name__ == '__main__':
     students = getResultHaveUPsolved(students_this, students_pre)
     students = getResult(students)
 
-    f = open(out, 'w', encoding="utf8")
-    print('Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Rank', file=f)
+    save_to_csv(out, students)
 
-    for stu in students:
-        if stu.name != '':
-            print('{0},{1},{2},{3},{4},{5},{6:.1f},{7:.1f},{8}'.format(stu.name, stu.accepted, stu.only_ac,
-                                                                       stu.accepted_fb, stu.score_rank, stu.upsolved,
-                                                                       stu.score_this, stu.score_sum, stu.rank),
-                  file=f)
-    f.close()
     print("Finished")

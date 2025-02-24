@@ -215,17 +215,17 @@ def getResultHaveUPsolved(students_this, students_pre):
     return students
 
 
-def getResult(students):
+def getResult(students,out_path : str):
     #如果没有历史输出，则创建文件
     try:
-        f = open(out, "r", encoding="utf-8")
+        f = open(out_path, "r", encoding="utf-8")
         f.close()
     except Exception as e:
-        f = open(out, "w", encoding="utf-8")
+        f = open(out_path, "w", encoding="utf-8")
         print('Name, Accepted, OnlyAC, FirstBlood, ThisRankScore, Upsolved, Score, SumScore, Rank', file=f)
         f.close()
     # 加上之前的sum值,排序，得到排名奖励分和rank
-    with open(out, "r", encoding="utf-8") as f:
+    with open(out_path, "r", encoding="utf-8") as f:
         f.readline()  # 吞掉标题行
         for line in f:
             studentFromScv = str(line).replace('\n', '').split(',')
@@ -273,8 +273,9 @@ def save_to_csv(path : str, students : list):
                                                                        stu.score_this, stu.score_sum + stu.score_rank, stu.rank),
                   file=f)
     f.close()
+
 #修改了师哥的代码，直接计算本次比赛的补题。
-def Crawl_and_save(browser:webdriver.Chrome):
+def Crawl_and_save(browser:webdriver.Chrome,out_path : str):
     readin()
     students = getResultOfUrl(this_url, True, browser)
     print("this_url success")
@@ -284,8 +285,8 @@ def Crawl_and_save(browser:webdriver.Chrome):
     save_to_csv(f"./history/{name}.csv", students)
 
     #叠加到上次比赛
-    students = getResult(students)
-    save_to_csv(out,students)
+    students = getResult(students,out_path)
+    save_to_csv(out_path,students)
     print("Finished")
 
 

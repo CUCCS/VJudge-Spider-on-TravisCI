@@ -4,7 +4,7 @@
 import run
 from selenium import webdriver
 #爬取所有比赛
-def get_all():
+def get_all(url_path : str, out_path : str):
     
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
@@ -16,7 +16,7 @@ def get_all():
     browser = webdriver.Chrome(options=chrome_options)
     browser.set_page_load_timeout(30)  # 设置页面加载超时时间为60秒
 
-    with open("all_url.txt", "r", encoding="UTF-8") as f:
+    with open(url_path, "r", encoding="UTF-8") as f:
         for line in f:
             line = line.rstrip("\n")
             f = open("url.txt", 'w',encoding="UTF-8").close()  # 先清空文件
@@ -27,14 +27,14 @@ def get_all():
             f.close()
             while True:
                 try:
-                    run.Crawl_and_save(browser)
+                    run.Crawl_and_save(browser,out_path)
                     # print(f"done: {line}")
                     break
                 except Exception as e:
                     print(e,"retry")
 
 #只爬取url的比赛
-def get_lastest(url):
+def get_lastest(url : str , out_path : str):
     
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
@@ -54,12 +54,12 @@ def get_lastest(url):
     #这里加入了重新申请机制，防止网络问题引起中途报错
     while True:
         try:
-            run.Crawl_and_save(browser)
+            run.Crawl_and_save(browser,out_path)
             # print(f"done: {line}")
             break
         except Exception as e:
             print(e,"retry")
 
 if __name__ == "__main__":
-    # get_all()
-    get_lastest("https://vjudge.net/contest/695643")
+    get_all("all_url.txt","all_result.csv")
+    #get_lastest("https://vjudge.net/contest/695643")

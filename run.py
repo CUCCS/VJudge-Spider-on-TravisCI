@@ -282,7 +282,7 @@ def Crawl_and_save(browser:webdriver.Chrome,out_path : str):
     name = str(this_url).strip().split('/')[-1]
 
     #打印本次结果，加入了历史记录，可以翻阅一起的内容
-    save_to_csv(f"./history/{name}.csv", students)
+    save_to_csv(f"history/{name}.csv", students)
 
     #叠加到上次比赛
     students = getResult(students,out_path)

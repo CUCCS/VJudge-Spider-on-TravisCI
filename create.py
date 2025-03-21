@@ -51,6 +51,8 @@ def get_lastest(url : str , out_path : str):
     f.write(f'{url}#rank\n')
     f.write(f'{url}#rank\n') 
     f.close()
+    f = open(out_path, 'w',encoding="UTF-8")
+    f.close()
     #这里加入了重新申请机制，防止网络问题引起中途报错
     while True:
         try:
@@ -63,6 +65,6 @@ def get_lastest(url : str , out_path : str):
 if __name__ == "__main__":
     #get_all("./url/all_url.txt","./outs/all_result.csv")
     get_all("./url/div1.txt","./outs/div1.csv")
-    get_all("./url/div2.txt","./outs/div3.csv")
+    get_all("./url/div2.txt","./outs/div2.csv")
     get_all("./url/div3.txt","./outs/div3.csv")
     #get_lastest("https://vjudge.net/contest/695643")

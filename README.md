@@ -1,7 +1,5 @@
-<<<<<<< HEAD
+
 # VJudge-Spider-on-TravisCI-2025 维护与更新By杜可
-=======
-# VJudge-Spider-on-TravisCI-2025 杜可维护与更新
 
 >  本身根本不会爬虫，为了给新生算分对这个代码缝缝补补才得以实现。
 >  提前说明，由于对run.py的改动较大，现在需要配合create.py才能正常运行

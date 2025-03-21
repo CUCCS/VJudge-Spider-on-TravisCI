@@ -61,5 +61,8 @@ def get_lastest(url : str , out_path : str):
             print(e,"retry")
 
 if __name__ == "__main__":
-    get_all("all_url.txt","all_result.csv")
+    #get_all("./url/all_url.txt","./outs/all_result.csv")
+    get_all("./url/div1.txt","./outs/div1.csv")
+    get_all("./url/div2.txt","./outs/div3.csv")
+    get_all("./url/div3.txt","./outs/div3.csv")
     #get_lastest("https://vjudge.net/contest/695643")

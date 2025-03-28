@@ -20,3 +20,4 @@ https://vjudge.net/contest/696565
 https://vjudge.net/contest/696570
 https://vjudge.net/contest/700491
 https://vjudge.net/contest/702663
+https://vjudge.net/contest/702780

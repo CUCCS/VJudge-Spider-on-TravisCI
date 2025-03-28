@@ -15,7 +15,8 @@ def get_all(url_path : str, out_path : str):
     chrome_options.add_argument("--no-sandbox")
     browser = webdriver.Chrome(options=chrome_options)
     browser.set_page_load_timeout(30)  # 设置页面加载超时时间为60秒
-
+    f = open(out_path, 'w',encoding="UTF-8")
+    f.close()
     with open(url_path, "r", encoding="UTF-8") as f:
         for line in f:
             line = line.rstrip("\n")
@@ -51,8 +52,6 @@ def get_lastest(url : str , out_path : str):
     f.write(f'{url}#rank\n')
     f.write(f'{url}#rank\n') 
     f.close()
-    f = open(out_path, 'w',encoding="UTF-8")
-    f.close()
     #这里加入了重新申请机制，防止网络问题引起中途报错
     while True:
         try:
@@ -63,8 +62,8 @@ def get_lastest(url : str , out_path : str):
             print(e,"retry")
 
 if __name__ == "__main__":
-    #get_all("./url/all_url.txt","./outs/all_result.csv")
-    get_all("./url/div1.txt","./outs/div1.csv")
-    get_all("./url/div2.txt","./outs/div2.csv")
-    get_all("./url/div3.txt","./outs/div3.csv")
-    #get_lastest("https://vjudge.net/contest/695643")
+    # get_all("./url/all_url.txt","./outs/all_result.csv")
+    # get_all("./url/div1.txt","./outs/div1.csv")
+    # get_all("./url/div2.txt","./outs/div2.csv")
+    # get_all("./url/div3.txt","./outs/div3.csv")
+    get_lastest("https://vjudge.net/contest/702780","./outs/all_result.csv");

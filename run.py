@@ -3,7 +3,7 @@ from selenium import webdriver
 import time
 from lxml import etree
 from selenium.common.exceptions import InvalidArgumentException
-
+import os
 from enum import Enum
 
 this_url = ""
@@ -277,12 +277,16 @@ def save_to_csv(path : str, students : list):
 #修改了师哥的代码，直接计算本次比赛的补题。
 def Crawl_and_save(browser:webdriver.Chrome,out_path : str):
     readin()
-    students = getResultOfUrl(this_url, True, browser)
-    print("this_url success")
     name = str(this_url).strip().split('/')[-1]
-
-    #打印本次结果，加入了历史记录，可以翻阅一起的内容
-    save_to_csv(f"./history/{name}.csv", students)
+    #查询历史记录
+    if os.path.exists(f"./history/{name}.csv"):
+        print("history file exists")
+        students = getResult([], f"./history/{name}.csv",)
+    else:
+        students = getResultOfUrl(this_url, True, browser)
+        print("this_url success")
+            #打印本次结果，加入了历史记录，可以翻阅一起的内容
+        save_to_csv(f"./history/{name}.csv", students)
 
     #叠加到上次比赛
     students = getResult(students,out_path)
